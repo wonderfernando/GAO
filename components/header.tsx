@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { useSession, signOut } from "next-auth/react"
+import Image from 'next/image'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -26,9 +27,10 @@ export default function Header() {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <Building2 className="h-8 w-8 text-yellow-400" />
-              <span className="text-xl font-bold text-grray-200">Business</span>
-              <span className="text-xl font-bold text-yellow-400">Wave</span>
+            {/*   <Building2 className="h-8 w-8 text-yellow-400" />
+             */}  <Image src="/Picture1.png" alt="Logo" width={50} height={50} />
+              <span className="text-xl font-bold text-grray-200">GAO</span>
+              <span className="text-xl font-bold text-yellow-400">Business</span>
             </Link>
           </div>
 

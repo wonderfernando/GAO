@@ -83,7 +83,7 @@ export default function Home() {
 
               {/* Subtítulo */}
               <p className="text-lg md:text-xl mb-10 text-gray-300 leading-relaxed max-w-2xl">
-                A BusinessWave é a plataforma profissional que une empresas e especialistas qualificados.
+                A GAO Business é a plataforma profissional que une empresas e especialistas qualificados.
                 Encontre oportunidades de negócio, ofereça serviços especializados ou acesse soluções empresariais completas.
               </p>
 
@@ -178,7 +178,7 @@ export default function Home() {
               Como Funciona
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              A BusinessWave conecta empresas que precisam de serviços com profissionais qualificados
+              A Gao Business conecta empresas que precisam de serviços com profissionais qualificados
             </p>
           </motion.div>
 
@@ -448,7 +448,7 @@ export default function Home() {
               Serviços da Plataforma
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Além de conectar profissionais e empresas, a BusinessWave também oferece serviços especializados
+              Além de conectar profissionais e empresas, a Gao Business também oferece serviços especializados
             </p>
           </motion.div>
 
@@ -630,8 +630,8 @@ export default function Home() {
               Pronto para Transformar Seu Negócio?
             </h2>
             <p className="text-xl mb-8 text-blue-100 max-w-2xl mx-auto">
-              Junte-se a centenas de empresas e profissionais que já confiam na BusinessWave para crescer e prosperar.
-            </p>
+              Junte-se a centenas de empresas e profissionais que já confiam na Gao Business para crescer e prosperar.
+            </p>  
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" className="bg-yellow-400 text-blue-900 hover:bg-yellow-500 h-14 text-lg font-semibold" asChild>
                 <Link href="/register">
