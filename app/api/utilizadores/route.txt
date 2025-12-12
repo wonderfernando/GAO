@@ -1,0 +1,61 @@
+// app/api/admin/utilizadores/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+
+// Validação opcional dos query params
+const querySchema = z.object({
+  tipo: z.enum(["PROFISSIONAL", "EMPRESA", "ADMINISTRADOR"]).optional(),
+  isactive: z
+    .boolean()
+    .optional()
+    .or(z.enum(["true", "false"]).transform((val) => val === "true")),
+  profissao: z.string().optional(),
+  email: z.string().email().optional(),
+  page: z.string().regex(/^\d+$/).optional(), // será convertido para number
+  limit: z.string().regex(/^\d+$/).optional(), // será convertido para number
+});
+
+export async function GET(req: NextRequest) {
+  try {
+    const url = req.nextUrl;
+    const query = Object.fromEntries(url.searchParams.entries());
+
+    // Valida os query params
+    const parsed = querySchema.parse(query);
+
+    const page = parsed.page ? parseInt(parsed.page) : 1;
+    const limit = parsed.limit ? parseInt(parsed.limit) : 10;
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+    if (parsed.tipo) where.tipo = parsed.tipo;
+    if (parsed.isactive !== undefined) where.isActive = parsed.isactive;
+    if (parsed.email)
+      where.email = { contains: parsed.email, mode: "insensitive" };
+    if (parsed.profissao)
+      where.profissao = { contains: parsed.profissao, mode: "insensitive" };
+
+    const [utilizadores, total] = await Promise.all([
+      prisma.usuario.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.usuario.count({ where }),
+    ]);
+
+    return NextResponse.json({
+      data: utilizadores,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (err) {
+    return NextResponse.json({ error: (err as any).message }, { status: 400 });
+  }
+}

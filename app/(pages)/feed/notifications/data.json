@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "titulo": "Nova mensagem",
+    "mensagem": "Você recebeu uma nova mensagem de João Silva.",
+    "lida": false
+  },
+  {
+    "id": 2,
+    "titulo": "Conexão aceita",
+    "mensagem": "Maria Pereira aceitou seu pedido de conexão.",
+    "lida": true
+  },
+  {
+    "id": 3,
+    "titulo": "Avaliação recebida",
+    "mensagem": "Carlos Santos deixou uma avaliação no seu perfil.",
+    "lida": false
+  }
+]

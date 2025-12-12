@@ -1,0 +1,32 @@
+import express from "express";
+import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
+import { createBullBoard } from "@bull-board/api";
+import { ExpressAdapter } from "@bull-board/express";
+import Queue from "bull";
+import { BullAdapter } from "@bull-board/api";
+
+const REDIS_CONFIG = {
+  host: "127.0.0.1",
+  port: 6379,
+};
+
+const QUEUE_NAME = "email-queue";
+const BULL_BOARD_BASE_PATH = "/admin/queues";
+const PORT = 3001;
+
+const emailQueue = new Queue(QUEUE_NAME, { redis: REDIS_CONFIG });
+
+const serverAdapter = new ExpressAdapter();
+serverAdapter.setBasePath(BULL_BOARD_BASE_PATH);
+createBullBoard({
+  queues: [new BullAdapter(emailQueue)],
+  serverAdapter: serverAdapter,
+});
+}); // ✅ forma correta na v2
+
+const app = express();
+app.use(BULL_BOARD_BASE_PATH, serverAdapter.getRouter());
+
+app.listen(PORT, () => {
+  console.log(`📊 Bull Board disponível em http://localhost:${PORT}${BULL_BOARD_BASE_PATH}`);
+});

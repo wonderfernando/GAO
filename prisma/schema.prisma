@@ -1,0 +1,241 @@
+// ==============================
+// GENERATOR E DATASOURCE
+// ==============================
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ==============================
+// ENUMS - TIPOS GERAIS
+// ==============================
+enum anexo_tipo {
+  PDF
+  JPEG
+  PNG
+}
+
+enum subscricaoStatus {
+  ACTIVE
+  INACTIVE
+  TRIAL
+}
+
+enum PropostaStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum pagamentotatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+// ==============================
+// ENUMS - SISTEMA DE GESTÃO
+// ==============================
+
+enum usuario_perfil {
+  PROFISSIONAL
+  EMPRESA
+  ADMINISTRADOR
+}
+
+enum processo_categoria {
+  REQUISICAO
+  RENOVACAO
+}
+
+// ==============================
+// MODELS - SISTEMA BÁSICO
+// ==============================
+model usuario {
+  id    String         @id @default(uuid())
+  email String         @unique
+  senha String
+  tipo  usuario_perfil
+
+  // Comuns
+  nome           String
+  telefone       String?
+  endereco       String?
+  dataNascimento DateTime?
+
+  // Foto de perfil e capa
+  fotoPerfilId String? @unique
+  fotoCapaId   String? @unique
+  fotoPerfil   anexo?  @relation("FotoPerfilUsuario", fields: [fotoPerfilId], references: [id])
+  fotoCapa     anexo?  @relation("FotoCapaUsuario", fields: [fotoCapaId], references: [id])
+
+  // Campos para EMPRESA
+
+  nif         String? @unique
+  sector      String? // EMPRESA
+  site        String?
+  logoId      String? @unique
+  logo        anexo?  @relation("LogoEmpresaUsuario", fields: [logoId], references: [id])
+  descricao   String? @db.Text
+  habiliaddes Json?
+  // Campos para PROFISSIONAL
+  profissao   String? // PROFISSIONAL
+  experiencia String? // PROFISSIONAL
+  bio         String? @db.Text
+  anexosIds   String? @unique
+  anexos      anexo[] @relation("AnexosProfissional")
+
+  // Relacionamentos comuns
+  subscricoes      subscricao[]
+  pagamento        pagamento[]
+  senhaResetTokens senhaResetToken[]
+  log              log[]
+  isActive         Boolean           @default(false)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  cv               cv?
+
+  // proposta proposta[]
+  // proposta proposta[]
+}
+
+model cv {
+  id              String      @id @default(uuid())
+  usuarioId       String      @unique
+  titulo          String
+  bio             String?     @db.Text
+  especialidade   String
+  habilidades     Json?
+  taxaPorHora     Decimal?    @db.Decimal(10, 2)
+  disponibilidade Boolean     @default(true)
+  usuario         usuario     @relation(fields: [usuarioId], references: [id])
+  categorias      categoria[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model categoria {
+  id        String   @id @default(uuid())
+  nome      String   @unique
+  descricao String?  @db.Text
+  cvs       cv[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("categoria")
+}
+
+model subscricao {
+  id         String           @id @default(uuid())
+  usuarioId  String
+  status     subscricaoStatus
+  dataInicio DateTime
+  dataFim    DateTime
+  valor      Decimal          @db.Decimal(10, 2)
+  usuario    usuario          @relation(fields: [usuarioId], references: [id])
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+}
+
+// model proposta {
+//   id          String         @id @default(uuid())
+//   remetenteId String
+//   receptorId  String
+//   titulo      String
+//   descricao   String         @db.Text
+//   orcamento   Decimal        @db.Decimal(10, 2)
+//   status      PropostaStatus @default(PENDING)
+//   remetente   usuario        @relation("propostasEnviadas", fields: [remetenteId], references: [id])
+//   receptor    usuario        @relation("propostasRecebidas", fields: [receptorId], references: [id])
+//   contrato    contrato?
+//   createdAt   DateTime       @default(now())
+//   updatedAt   DateTime       @updatedAt
+// }
+
+model contrato {
+  id         String    @id @default(uuid())
+  propostaId String    @unique
+  // proposta   proposta  @relation(fields: [propostaId], references: [id])
+  startDate  DateTime
+  endDate    DateTime?
+  terms      String    @db.Text
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model pagamento {
+  id              String         @id @default(uuid())
+  usuarioId       String
+  valor           Decimal        @db.Decimal(10, 2)
+  status          pagamentotatus
+  pagamentoMethod String?
+  referencia      String?
+  usuario         usuario        @relation(fields: [usuarioId], references: [id])
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+// ==============================
+// MODELS - SUPORTE E SISTEMA
+// ==============================
+model senhaResetToken {
+  id            String   @id @default(cuid())
+  usuarioId     String
+  token         String   @unique
+  dataExpiracao DateTime
+  usuario       usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade, map: "senhaResetToken_usuario_usuarioId_fkey")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now())
+
+  @@index([usuarioId])
+  @@map("senhaResetToken")
+}
+
+model anexo {
+  id        String  @id @default(cuid())
+  nome      String
+  path      String?
+  url       String?
+  tamanhoMB Float?
+
+  // Fotos
+  fotoPerfilUsuario usuario? @relation("FotoPerfilUsuario")
+  fotoCapaUsuario   usuario? @relation("FotoCapaUsuario")
+  logoUsuario       usuario? @relation("LogoEmpresaUsuario")
+
+  // Relacionamento com anexos do profissional
+  profissionalId String?
+  profissional   usuario? @relation("AnexosProfissional", fields: [profissionalId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("anexo")
+}
+
+model log {
+  id        String   @id @default(cuid())
+  acao      String
+  detalhe   String
+  usuarioId String
+  usuario   usuario  @relation(fields: [usuarioId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  @@index([usuarioId], map: "log_usuarioId_fkey")
+  @@map("log")
+}
+
+model systemConfig {
+  id        String   @id @default(cuid())
+  chave     String   @unique
+  valor     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  @@map("systemConfig")
+}

@@ -1,0 +1,40 @@
+name: Deploy Busnesswave via FTP
+
+on:
+  push:
+    branches:
+      - main  # Ou outra branch que você usa para deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'  # Use a versão Node.js que seu projeto requer
+
+      - name: Instalando as dependências do projecto
+        run: npm install
+
+      - name: Build do projecto
+        run: npm run build   
+
+      - name: Deploy para o Serveridor FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          protocol: ftps
+          server: ${{ secrets.FTP_SERVER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          username: ${{ secrets.FTP_USERNAME }}
+          server-dir: '/home5/kvtestec/'  # Caminho no servidor FTP
+          local-dir: './'  # Pasta local que será enviada para o FTP
+          passive: true
+
+      - name: Post-Deploy Commands
+        run: |
+          echo "Deploy concluído com sucesso!"

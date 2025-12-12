@@ -1,0 +1,52 @@
+import nodemailer from "nodemailer";
+import hbs from "nodemailer-express-handlebars";
+import path from "path";
+import { cwd } from "process";
+import { EmailData } from "@/types/email";
+
+const templatesDir = path.join(cwd(), "lib", "email", "templates");
+
+const transport = nodemailer.createTransport({
+  host: "mail.mos.ao",
+  port: 465,
+  secure: true,
+  auth: {
+    user: "geral@mos.ao",
+    pass: "geralmos.2024",
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
+
+const hbsOptions = {
+  viewEngine: {
+    extName: ".hbs",
+    defaultLayout: "baseMessage",
+    partialsDir: path.join(templatesDir, "views", "layouts"),
+    layoutsDir: path.join(templatesDir, "views", "layouts"),
+  },
+  viewPath: path.join(templatesDir, "views"),
+  extName: ".hbs",
+};
+
+transport.use("compile", hbs(hbsOptions));
+
+export async function sendEmail(data: EmailData) {
+  const { to, subject, body, title = "Notificação" } = data;
+
+  return transport.sendMail({
+    from: "geral@mos.ao",
+    to: Array.isArray(to) ? to.join(", ") : to,
+    subject,
+    template: "baseMessage",
+    context: { title, body },
+    attachments: [
+      {
+        filename: "logo.png",
+        path: path.join(templatesDir, "images", "logo.png"),
+        cid: "unique@logoid",
+      },
+    ],
+  });
+}
